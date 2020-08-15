@@ -1,20 +1,21 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+    <c-select :values='[1,2,3,4,5]'></c-select>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import HelloWorld from './components/HelloWorld.vue';
+import CSelect from "@/custom-select/CSelect.vue";
 
 @Component({
   components: {
-    HelloWorld,
+    CSelect
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+
+}
 </script>
 
 <style lang="scss">

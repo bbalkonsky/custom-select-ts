@@ -14,7 +14,7 @@
     </div>
 
     <div class="cselect_body">
-      <c-select-item v-for="value in values" :inputValue="'Value ' + value" :key="value"
+      <c-select-item v-for="(value, idx) in optionList" :option-title="value.label" :option-value="value.value" :key="idx"
                      @on-value-click="onValueClick($event)"/>
     </div>
   </div>
@@ -23,23 +23,27 @@
 <script lang="ts">
 import {Component, Prop, Vue} from "vue-property-decorator";
 import CSelectItem from "@/custom-select/CSelectItem.vue";
+import Options, {numOrStr} from "@/custom-select/model/Options";
 
 @Component({
   components: {CSelectItem}
 })
 
 export default class CSelect extends Vue {
-  @Prop() private values!: string[];
+  @Prop() private selectOptions: numOrStr[] | object | undefined;
+  @Prop({default: 'label'}) private labelField!: string;
+  @Prop() private valueField!: string;
 
-  isSelectActive = false;
+  isSelectActive = true;
   currentSelectValue = '';
+
 
   onSelectClick(): void {
     this.isSelectActive = !this.isSelectActive;
   }
 
   onValueClick(inputValue: string): void {
-    this.currentSelectValue = inputValue;
+    this.currentSelectValue = inputValue.toString();
     this.isSelectActive = false;
   }
 
@@ -49,6 +53,52 @@ export default class CSelect extends Vue {
       this.isSelectActive = false;
     } else {
       this.isSelectActive = !this.isSelectActive;
+    }
+  }
+
+  // альтернативой было делать наоборот - разные компоненты в шаблоне для разных типов входных параметров
+  // но такой вариант мне просто ближе (несмотря на теоритический проигрыш по скорости)
+  get optionList(): any[] {
+    if (Array.isArray(this.selectOptions)) {
+      return this.arrayHandler(this.selectOptions);
+    } else if (typeof this.selectOptions === 'object') {
+      return this.objectHandler(this.selectOptions);
+    } else {
+      return [];
+    }
+  }
+
+  arrayHandler(arr: any[]): Options[] {
+    if (typeof arr[0] === 'number' || typeof arr[0] === 'string') {
+      return arr.map(item => {
+        return this.getOptionsObject(item);
+      })
+    } else {
+      const valueField = this.valueField ? this.valueField : 'value';
+      return arr.map(item => {
+        return this.getOptionsObject(item[this.labelField], item[valueField]);
+      })
+    }
+  }
+
+  objectHandler(obj: any): Options[] {
+    const objKeys = Object.keys(obj);
+    if (typeof obj[objKeys[0]] === 'number' || typeof obj[objKeys[0]] === 'string') {
+      return objKeys.map(key => {
+        return this.getOptionsObject(obj[key], key);
+      })
+    } else {
+      const labelField = this.valueField ? this.valueField : 'title';
+      return objKeys.map(key => {
+        return this.getOptionsObject(obj[key][labelField], key);
+      })
+    }
+  }
+
+  getOptionsObject(label: numOrStr, value: numOrStr = label): Options {
+    return {
+      label,
+      value
     }
   }
 

@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <c-select :values='[1,2,3,4,5]'></c-select>
+    <c-select :values='[1,2,3,4,5]'>Мой плейсхолдер</c-select>
   </div>
 </template>
 

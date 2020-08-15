@@ -1,8 +1,14 @@
 <template>
   <div class="cselect" :class="{'is-active': isSelectActive}">
     <div class="cselect_header" @click="onSelectClick()">
-      <span class="cselect_current">{{ currentSelectValue }}</span>
-      <div class="cselect_ico" @click.stop="clearCurrentValue()">
+      <span class="cselect_current" :class="{'is-placeholder': !currentSelectValue.length}">
+        <template v-if="currentSelectValue.length">
+          {{ currentSelectValue }}
+        </template>
+        <slot v-else>Please select</slot>
+      </span>
+
+      <div class="cselect_ico" @click.stop="onIcoClick()">
         {{ !currentSelectValue.length ? (isSelectActive ? '&uarr;' : '&darr;') : '&times;' }}
       </div>
     </div>
@@ -25,7 +31,7 @@ import CSelectItem from "@/custom-select/CSelectItem.vue";
 export default class CSelect extends Vue {
   @Prop() private values!: string[];
 
-  isSelectActive = true;
+  isSelectActive = false;
   currentSelectValue = '';
 
   onSelectClick(): void {
@@ -37,8 +43,13 @@ export default class CSelect extends Vue {
     this.isSelectActive = false;
   }
 
-  clearCurrentValue(): void {
-    this.currentSelectValue = '';
+  onIcoClick(): void {
+    if (this.currentSelectValue.length) {
+      this.currentSelectValue = '';
+      this.isSelectActive = false;
+    } else {
+      this.isSelectActive = !this.isSelectActive;
+    }
   }
 
 }
@@ -77,6 +88,10 @@ $grey: #cccccc;
     font-size: 18px;
     line-height: 24px;
     padding: 8px;
+
+    &.is-placeholder {
+      color: $grey;
+    }
   }
 
   &_ico {

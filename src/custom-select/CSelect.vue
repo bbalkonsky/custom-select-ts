@@ -1,15 +1,15 @@
 <template>
-  <div tabindex="0" class="cselect" :class="{'is-active': isSelectActive}">
+  <div tabindex="0" class="cselect" :class="{'is-active': isSelectActive}" @keyup.down="onDown()">
     <div class="cselect_header" @click="onSelectClick()">
-      <span class="cselect_current" :class="{'is-placeholder': !currentSelectValue.length}">
-        <template v-if="currentSelectValue.length">
-          {{ currentSelectValue }}
+      <span class="cselect_current" :class="{'is-placeholder': currentSelectIdx === -1}">
+        <template v-if="currentSelectIdx >= 0">
+          {{ optionList[currentSelectIdx].label }}
         </template>
         <slot v-else>Please select</slot>
       </span>
 
       <div class="cselect_ico" @click.stop="onIcoClick()">
-        {{ !currentSelectValue.length ? (isSelectActive ? '&uarr;' : '&darr;') : '&times;' }}
+        {{ currentSelectIdx === -1 ? (isSelectActive ? '&uarr;' : '&darr;') : '&times;' }}
       </div>
     </div>
 
@@ -32,19 +32,22 @@ import Options, {numOrStr} from "@/custom-select/model/Options";
 
 export default class CSelect extends Vue {
   @Prop() private selectOptions: numOrStr[] | object | undefined;
-  @Prop() private value!: string;
+  @Prop() private value!: numOrStr;
   @Prop({default: 'label'}) private labelField!: string;
   @Prop() private valueField!: string;
 
   isSelectActive = false;
-  currentSelectValue = '';
+  // currentSelect: Options;
+
+  currentSelectIdx = -1;
 
   onSelectClick(): void {
     this.isSelectActive = !this.isSelectActive;
   }
 
   onOptionClick(selected: Options): void {
-    this.currentSelectValue = selected.label.toString();
+    // this.currentSelect = selected;
+    this.currentSelectIdx = this.optionList.findIndex(item => item.label === selected.label && item.value === selected.value);
     this.isSelectActive = false;
 
     // т.к. input от change в случае селекта отличется только моментом срабатывания, просто эмитим их в такой последовательности
@@ -53,8 +56,8 @@ export default class CSelect extends Vue {
   }
 
   onIcoClick(): void {
-    if (this.currentSelectValue.length) {
-      this.currentSelectValue = '';
+    if (this.currentSelectIdx >= 0) {
+      this.currentSelectIdx = -1;
       this.isSelectActive = false;
     } else {
       this.isSelectActive = !this.isSelectActive;
@@ -73,12 +76,8 @@ export default class CSelect extends Vue {
 
     // для работы v-model
     if (this.value) {
-      for (const option of resultArray) {
-        if (option.value === this.value) {
-          this.currentSelectValue = option.label.toString();
-          break;
-        }
-      }
+      const foundValue = resultArray.findIndex(item => item.value === this.value);
+      foundValue != -1 ? this.currentSelectIdx = foundValue : null;
     }
 
     return resultArray;
@@ -116,6 +115,13 @@ export default class CSelect extends Vue {
       label,
       value
     }
+  }
+
+  onDown() {
+    // if (this.optionList.length - 1 === this.currentSelectIdx) {
+    //
+    // }
+    console.log(this.optionList[this.currentSelectIdx])
   }
 
 }

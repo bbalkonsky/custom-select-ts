@@ -1,11 +1,14 @@
 <template>
   <div id="app">
-<!--    <c-select :select-options='a'>Массив строк</c-select>-->
-<!--    <c-select :select-options='b'>Массив объектов</c-select>-->
-    <c-select :select-options='c' label-field="name" value-field="id">Массив кастомных объектов</c-select>
-<!--    <c-select :select-options='d'>Стандартный объект</c-select>-->
-<!--    <c-select :select-options='e'>Кастомный объект</c-select>-->
-<!--    <c-select :select-options='e' value-field="id">Кастомный объект</c-select>-->
+    <p>Выбранный элемент: {{selected}}</p>
+
+<!--    <c-select v-model="selected" :select-options='a'>Массив строк</c-select>-->
+<!--    <c-select v-model="selected" :select-options='b'>Массив объектов</c-select>-->
+<!--    <c-select v-model="selected" :select-options='c' label-field="name" value-field="id">Массив кастомных объектов</c-select>-->
+<!--    <c-select v-model="selected" :select-options='d'>Стандартный объект</c-select>-->
+<!--    <c-select v-model="selected" :select-options='e'>Кастомный объект</c-select>-->
+    <c-select v-model="selected" :select-options='e' value-field="id">Кастомный объект</c-select>
+
   </div>
 </template>
 
@@ -25,6 +28,7 @@ export default class App extends Vue {
   c = [{ name: 'Label 1', id: 1}, { name: 'Label 2', id: 2 }];
   d = { value1: 'Label 1', value2: 'Label 2' };
   e = { value1: { title: 'Label 1', id: '1' }, value2: { title: 'Label 2', id: 2 } };
+  selected = 2;
 }
 </script>
 

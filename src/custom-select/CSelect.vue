@@ -1,5 +1,5 @@
 <template>
-  <div class="cselect" :class="{'is-active': isSelectActive}">
+  <div tabindex="0" class="cselect" :class="{'is-active': isSelectActive}">
     <div class="cselect_header" @click="onSelectClick()">
       <span class="cselect_current" :class="{'is-placeholder': !currentSelectValue.length}">
         <template v-if="currentSelectValue.length">
@@ -14,8 +14,9 @@
     </div>
 
     <div class="cselect_body">
-      <c-select-item v-for="(value, idx) in optionList" :option-title="value.label" :option-value="value.value" :key="idx"
-                     @on-value-click="onValueClick($event)"/>
+      <c-select-item v-for="(value, idx) in optionList" :option-label="value.label" :option-value="value.value"
+                     :key="idx"
+                     @on-option-click="onOptionClick($event)"/>
     </div>
   </div>
 </template>
@@ -31,20 +32,24 @@ import Options, {numOrStr} from "@/custom-select/model/Options";
 
 export default class CSelect extends Vue {
   @Prop() private selectOptions: numOrStr[] | object | undefined;
+  @Prop() private value!: string;
   @Prop({default: 'label'}) private labelField!: string;
   @Prop() private valueField!: string;
 
-  isSelectActive = true;
+  isSelectActive = false;
   currentSelectValue = '';
-
 
   onSelectClick(): void {
     this.isSelectActive = !this.isSelectActive;
   }
 
-  onValueClick(inputValue: string): void {
-    this.currentSelectValue = inputValue.toString();
+  onOptionClick(selected: Options): void {
+    this.currentSelectValue = selected.label.toString();
     this.isSelectActive = false;
+
+    // т.к. input от change в случае селекта отличется только моментом срабатывания, просто эмитим их в такой последовательности
+    this.$emit('input', selected.value);
+    this.$emit('change', selected.value);
   }
 
   onIcoClick(): void {
@@ -57,15 +62,26 @@ export default class CSelect extends Vue {
   }
 
   // альтернативой было делать наоборот - разные компоненты в шаблоне для разных типов входных параметров
-  // но такой вариант мне просто ближе (несмотря на теоритический проигрыш по скорости)
-  get optionList(): any[] {
+  // но я это осознал, когда уже сделал вот так ¯\_(ツ)_/¯
+  get optionList(): Options[] {
+    let resultArray: Options[] = [];
     if (Array.isArray(this.selectOptions)) {
-      return this.arrayHandler(this.selectOptions);
+      resultArray = this.arrayHandler(this.selectOptions);
     } else if (typeof this.selectOptions === 'object') {
-      return this.objectHandler(this.selectOptions);
-    } else {
-      return [];
+      resultArray = this.objectHandler(this.selectOptions);
     }
+
+    // для работы v-model
+    if (this.value) {
+      for (const option of resultArray) {
+        if (option.value === this.value) {
+          this.currentSelectValue = option.label.toString();
+          break;
+        }
+      }
+    }
+
+    return resultArray;
   }
 
   arrayHandler(arr: any[]): Options[] {

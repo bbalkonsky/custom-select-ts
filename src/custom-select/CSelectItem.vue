@@ -1,19 +1,23 @@
 <template>
-  <div class="cselect_item" @click="onValueClick(optionValue)">{{ optionTitle }}</div>
+  <div class="cselect_item" @click="onOptionClick()">{{ optionLabel }}</div>
 </template>
 
 <script lang="ts">
 import {Component, Emit, Prop, Vue} from "vue-property-decorator";
+import Options, {numOrStr} from "@/custom-select/model/Options";
 
 @Component
 
 export default class CSelectItem extends Vue {
-  @Prop() private optionTitle!: string | number;
-  @Prop() private optionValue!: string | number;
+  @Prop() private optionLabel!: numOrStr;
+  @Prop() private optionValue!: numOrStr;
 
   @Emit()
-  onValueClick(val: string) {
-    return val;
+  onOptionClick(): Options {
+    return {
+      label: this.optionLabel,
+      value: this.optionValue
+    };
   }
 }
 </script>

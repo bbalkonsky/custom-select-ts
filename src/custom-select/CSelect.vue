@@ -1,5 +1,5 @@
 <template>
-  <div tabindex="0" class="cselect" :class="{'is-active': isSelectActive}" @keyup.down="onDown()">
+  <div tabindex="0" class="cselect" :class="{'is-active': isSelectActive}" @keyup.up="onUp()" @keyup.down="onDown()">
     <div class="cselect_header" @click="onSelectClick()">
       <span class="cselect_current" :class="{'is-placeholder': currentSelectIdx === -1}">
         <template v-if="currentSelectIdx >= 0">
@@ -49,10 +49,7 @@ export default class CSelect extends Vue {
     // this.currentSelect = selected;
     this.currentSelectIdx = this.optionList.findIndex(item => item.label === selected.label && item.value === selected.value);
     this.isSelectActive = false;
-
-    // т.к. input от change в случае селекта отличется только моментом срабатывания, просто эмитим их в такой последовательности
-    this.$emit('input', selected.value);
-    this.$emit('change', selected.value);
+    this.inputChangeEmit();
   }
 
   onIcoClick(): void {
@@ -117,11 +114,25 @@ export default class CSelect extends Vue {
     }
   }
 
-  onDown() {
-    // if (this.optionList.length - 1 === this.currentSelectIdx) {
-    //
-    // }
-    console.log(this.optionList[this.currentSelectIdx])
+  // т.к. input от change в случае селекта отличется только моментом срабатывания, просто эмитим их в такой последовательности
+  inputChangeEmit(): void {
+    const activeValue = this.optionList[this.currentSelectIdx].value;
+    this.$emit('input', activeValue);
+    this.$emit('change', activeValue);
+  }
+
+  onUp(): void {
+    if (this.currentSelectIdx > 0) {
+      this.currentSelectIdx = this.currentSelectIdx - 1;
+      this.inputChangeEmit();
+    }
+  }
+
+  onDown(): void {
+    if (this.optionList.length - 1 > this.currentSelectIdx) {
+      this.currentSelectIdx = this.currentSelectIdx + 1;
+      this.inputChangeEmit();
+    }
   }
 
 }
